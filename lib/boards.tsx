@@ -1,19 +1,23 @@
 import { COVER_LISBON, COVER_TOKYO, DAY_ALFAMA, PLACES_LISBON } from './copy';
-import { theme, type Lang } from './themes';
+import { theme, type Lang, type ThemeId } from './themes';
 import { CoverA, CoverB, CoverC, ISSUE_LISBON, ISSUE_TOKYO } from '@/components/zine/Covers';
+import { ColophonPage } from '@/components/zine/ColophonPage';
 import { DayPage } from '@/components/zine/DayPage';
+import { NotesPage } from '@/components/zine/NotesPage';
 import { PlacesPage } from '@/components/zine/PlacesPage';
+import { sampleContent } from './content';
+import { layout } from './layout';
 
 export interface Board {
   slug: string;
   title: string;
   group: string;
-  defaults: { theme: string; lang: Lang };
-  render: (themeId: string, lang: Lang) => React.ReactNode;
+  defaults: { theme: ThemeId; lang: Lang };
+  render: (themeId: ThemeId, lang: Lang) => React.ReactNode;
 }
 
 const cover = (
-  slug: string, title: string, group: string, defaultTheme: string,
+  slug: string, title: string, group: string, defaultTheme: ThemeId,
   Component: typeof CoverA, copy: typeof COVER_LISBON, issue: typeof ISSUE_LISBON,
 ): Board => ({
   slug, title, group,
@@ -43,6 +47,28 @@ export const BOARDS: Board[] = [
     defaults: { theme: 'lisbon', lang: 'en' },
     render: (themeId, lang) => <PlacesPage t={theme(themeId)} l={PLACES_LISBON[lang]} inverted />,
   },
+  {
+    slug: 'notes', title: 'Notes', group: 'Back matter',
+    defaults: { theme: 'lisbon', lang: 'en' },
+    render: (themeId, lang) => <NotesPage t={theme(themeId)} lang={lang} echo={theme(themeId).echoLabel} />,
+  },
+  {
+    slug: 'colophon', title: 'Colophon', group: 'Back matter',
+    defaults: { theme: 'lisbon', lang: 'en' },
+    render: (themeId, lang) => {
+      const t = theme(themeId);
+      const { pages } = layout(sampleContent('lisbon', lang), { theme: themeId, lang, tier: 'paid' });
+      const colophon = pages.find((p) => p.spreadType === 'colophon');
+      return (
+        <ColophonPage
+          t={t}
+          lang={lang}
+          echo={t.echoLabel}
+          credits={colophon?.spreadType === 'colophon' ? colophon.credits : []}
+        />
+      );
+    },
+  },
 ];
 
 export const boardBySlug = (slug: string) => BOARDS.find((b) => b.slug === slug);
@@ -53,6 +79,3 @@ export const GROUPS = BOARDS.reduce<{ group: string; boards: Board[] }[]>((acc, 
   else acc.push({ group: b.group, boards: [b] });
   return acc;
 }, []);
-
-/** Reading order of the Lisbon sample booklet. */
-export const BOOKLET = ['cover-a-lisbon', 'day-alfama', 'places-light', 'places-inverted'];

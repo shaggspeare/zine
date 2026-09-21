@@ -3,14 +3,14 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { BOARDS, GROUPS } from '@/lib/boards';
-import { LANGS, THEMES, THEME_IDS, type Lang } from '@/lib/themes';
+import { LANGS, THEMES, THEME_IDS, type Lang, type ThemeId } from '@/lib/themes';
 import styles from './gallery.module.css';
 
 const LANG_NAMES: Record<Lang, string> = { en: 'English', uk: 'Українська' };
 
 export default function Gallery() {
   const [slug, setSlug] = useState(BOARDS[0].slug);
-  const [themeId, setThemeId] = useState<string | null>(null);
+  const [themeId, setThemeId] = useState<ThemeId | null>(null);
   const [lang, setLang] = useState<Lang | null>(null);
   const [zoom, setZoom] = useState(0.75);
 
@@ -33,7 +33,7 @@ export default function Gallery() {
 
         <div className={styles.ctl}>
           <label htmlFor="theme">Theme</label>
-          <select id="theme" value={t} onChange={(e) => setThemeId(e.target.value)}>
+          <select id="theme" value={t} onChange={(e) => setThemeId(e.target.value as ThemeId)}>
             {THEME_IDS.map((id) => <option key={id} value={id}>{THEMES[id].name}</option>)}
           </select>
 

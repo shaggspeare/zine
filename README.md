@@ -20,9 +20,11 @@ pnpm build && pnpm start
 | `/print-guide?theme=&lang=` | One page: printer settings, fold and staple |
 
 Slugs: `cover-a-lisbon`, `cover-b-lisbon`, `cover-c-lisbon`, `cover-a-tokyo`,
-`cover-b-tokyo`, `cover-c-tokyo`, `day-alfama`, `places-light`, `places-inverted`.
+`cover-b-tokyo`, `cover-c-tokyo`, `day-alfama`, `places-light`, `places-inverted`,
+`notes`, `colophon`.
 
 Themes: `lisbon`, `krakow`, `tokyo`, `barcelona`. Languages: `en`, `uk`.
+`/booklet` also takes `issue=lisbon|tokyo` and `tier=free|paid`.
 
 ## How it fits together
 
@@ -32,9 +34,25 @@ either language — pages are derived from data, never edited directly (spec §2
 
 - `lib/themes.ts` — the four themes, plus the derivation for inverted (dark) pages.
 - `lib/copy.ts` — booklet copy in EN and UK, extracted verbatim from the design export.
-- `lib/boards.tsx` — board registry used by the gallery and both page routes.
-- `components/zine/` — `primitives.tsx` (A5 shell, tag, contents list, QR), `Covers.tsx`, `DayPage.tsx`, `PlacesPage.tsx`.
+- `lib/layout.ts` — the layout engine (below).
+- `lib/content.ts` — the sample booklet's content, standing in for the wizard's output.
+- `lib/credits.ts` — photo licensing, keyed by asset.
+- `lib/boards.tsx` — board registry used by the gallery and the single-board route.
+- `components/zine/` — `primitives.tsx` (A5 shell, tag, contents list, QR), the variants, and `renderPage.tsx`, which maps a `PageSpec` to its variant.
 - `public/assets`, `public/fonts` — photos and Oswald / PT Serif (SIL OFL), bundled so it works offline.
+
+## Layout engine
+
+`layout(content, { theme, lang, tier })` in `lib/layout.ts` is pure and deterministic:
+the same content always gives the same pages. It builds the skeleton (cover → days →
+places → back cover), paginates places three to a page, cuts to the tier's page budget
+(free 8, paid 20) reporting every cut in `dropped`, then pads with notes pages so the
+count is a multiple of four — a booklet is folded sheets, so nothing else folds. The
+colophon's photo credits are collected from the photos actually placed, with the page
+number the reader will find them on, because attribution is a legal requirement and
+never hidden in any tier (spec §8.5).
+
+The renderer never decides layout; it draws the `PageSpec` it is handed.
 
 Pages are drawn at 4 px per mm (592 × 840 px). Printing applies `@page 148mm 210mm`
 and `zoom: .9449`, so an A5 page comes out at true size.
@@ -66,9 +84,12 @@ A5 and A4 page boxes, one sheet per two booklet pages, fonts embedded, under 20 
 ## Checks
 
 ```
-pnpm check       # 9 boards x 4 themes x 2 languages match the design export
-pnpm pdf:check   # the generated PDFs are printable and fold correctly
+pnpm layout:check   # 640 layouts fold in fours, stay in budget, credit every photo
+pnpm check          # 9 boards x 4 themes x 2 languages match the design export
+pnpm pdf:check      # the generated PDFs are printable and fold correctly
 ```
+
+`pnpm layout:check` is pure and needs nothing running.
 
 `scripts/check.mjs` renders every board variant and asserts the text and the set of
 colours match `design/pages/*.html` exactly. Both checks need a running server.
