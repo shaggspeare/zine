@@ -1,45 +1,67 @@
-# Travel Zine Generator: design export
+# Travel Zine
 
-Printable city-trip booklet (A5 portrait, 148 x 210 mm) with four themes, English and Ukrainian, and two sample issues (Lisbon, Tokyo).
+A printable A5 city-trip booklet (148 × 210 mm) rendered in the browser: four themes,
+English and Ukrainian, Lisbon and Tokyo sample issues. Next.js App Router, no database
+and no AI yet — the renderer first, per phase 1 of the implementation spec.
 
-## Open it
+```
+pnpm install
+pnpm dev          # http://localhost:3000
+pnpm build && pnpm start
+```
 
-Open `index.html` in a browser. Pick a page on the left; the Theme and Language menus re-skin any page. Every variant is also a plain file in `pages/`, named `<Board>__<theme>__<lang>.html`. Oswald and PT Serif are bundled in `fonts/` (SIL Open Font License), so it works offline. The Japanese echo word 東京 uses Noto Sans JP from Google Fonts when online, and a system Japanese font otherwise.
+## Routes
 
-## What is in the folder
+| Route | What |
+| --- | --- |
+| `/` | Gallery: board list, theme / language / zoom controls |
+| `/p/<slug>?theme=&lang=` | One board on its own, print-ready |
+| `/booklet?theme=&lang=` | Lisbon sample in reading order, one A5 page per sheet |
 
-- `index.html`: gallery of all pages.
-- `pages/`: 77 static HTML pages, one per board, theme and language. Each is self-contained apart from the fonts and the photos in `assets/`.
-- `assets/`: the photos, already toned (blue duotone for the Lisbon theme, black and white for the others), 1000 px on the long side.
-- `tokens.json`: theme tokens (paper, ink, primary, accent, accent2, muted, darkPage, motif, tag style, photo treatment, echo mode) and page geometry.
-- `source/`: the original editable Claude Design files (`*.dc.html`, `canvas.json`). Each has its markup, plus a script block holding the copy and theme table. They need the Claude Design runtime to render, so use `pages/` to view.
+Slugs: `cover-a-lisbon`, `cover-b-lisbon`, `cover-c-lisbon`, `cover-a-tokyo`,
+`cover-b-tokyo`, `cover-c-tokyo`, `day-alfama`, `places-light`, `places-inverted`.
 
-## Page geometry
+Themes: `lisbon`, `krakow`, `tokyo`, `barcelona`. Languages: `en`, `uk`.
 
-The design is drawn at 4 px per mm: an A5 page is 592 x 840 px. Margins are 32 px outer, top and bottom (8 mm) and 40 px on the spine side (10 mm). Grid: 6 columns, 16 px gutter (4 mm), 12 px baseline (3 mm). Body text 12.7 px / 16.9 px is 9 pt / 12 pt. Printing an A5 page from `pages/*.html` applies a print stylesheet (`@page` 148 x 210 mm and zoom 0.9449) so the page comes out at true size; turn off "headers and footers" and set scale to 100% in the print dialog.
+## How it fits together
 
-## How the themes work
+Layout never changes between themes; only the tokens do. Every board is one React
+component that reads theme tokens and copy, so any board renders in any theme and
+either language — pages are derived from data, never edited directly (spec §2.3).
 
-One skeleton, many cities. Layout never changes between themes; only the tokens do. See `tokens.json`. Photos come in two treatments per image: `*-duotone.jpg` (Lisbon theme) and `*-bw.jpg` (other themes; Barcelona adds contrast 1.35 in CSS).
+- `lib/themes.ts` — the four themes, plus the derivation for inverted (dark) pages.
+- `lib/copy.ts` — booklet copy in EN and UK, extracted verbatim from the design export.
+- `lib/boards.tsx` — board registry used by the gallery and both page routes.
+- `components/zine/` — `primitives.tsx` (A5 shell, tag, contents list, QR), `Covers.tsx`, `DayPage.tsx`, `PlacesPage.tsx`.
+- `public/assets`, `public/fonts` — photos and Oswald / PT Serif (SIL OFL), bundled so it works offline.
 
-## Content notes
+Pages are drawn at 4 px per mm (592 × 840 px). Printing applies `@page 148mm 210mm`
+and `zoom: .9449`, so an A5 page comes out at true size: choose 100% scale and turn
+off headers and footers in the print dialog. Browser "Save as PDF" is the export for
+now; the Playwright + pdf-lib worker that imposes A4 duplex sheets is not built yet.
 
-- Hours in brackets, such as `[10:00–18:00]`, and the issue lines (dates, temperatures) are placeholders, not verified facts.
-- The QR codes are decorative placeholders and do not scan.
-- Ukrainian copy is a working translation and needs a native review.
+## Check
 
-## Still to design (from the brief)
+`scripts/check.mjs` renders all 9 boards × 4 themes × 2 languages and asserts the text
+and the set of colours match the original design export exactly:
 
-Intro feature, overview map, timeline, 5-stop and 2-page day variants, 2- and 4-place list variants, practical, notes, colophon, print-sheet view, and the app screens.
+```
+pnpm build && pnpm start -p 3111 &
+pnpm check
+```
 
-## Photo credits (Unsplash, free to use; credit is appreciated)
+## design/
 
-- Alfama dome view (Lisbon cover): Veronika Martinelli
-- Rooftops and river (places page): Tom Byrom
-- Bridge (places page): Malu Decks
-- Skyline (theme board, components): Liam McKay
-- Tram (Barcelona sample): Andre Lergier
-- Tokyo Tower (Tokyo sample): Jaison Lin
-- Tokyo alley (Tokyo cover): Yoav Aziz
+The original Claude Design export, kept as the visual reference and as the fixture the
+check compares against: `design/index.html` (open it in a browser), `design/pages/` (77
+static variants), `design/source/` (editable `.dc.html` originals), `design/tokens.json`.
+Nothing in the app imports from it at runtime.
 
-Photographer names are taken from the downloaded file names; check each photo's page on Unsplash before publishing.
+`Travel Zine Generator — Claude Code Implementation Spec.md` is the product spec; the
+build order lives in its section 17.
+
+## Credits
+
+Photos from Unsplash (see `design/README.md`). The maps and QR codes on the sample
+pages are decorative placeholders. Hours in brackets are placeholders, not verified
+facts. The Ukrainian copy is a working translation and needs a native review.

@@ -1,5 +1,5 @@
 // Port check: every board must render the same text and the same colours as the
-// original design export in ../pages. Run a server first:
+// original design export in design/pages. Run a server first:
 //   pnpm build && pnpm start -p 3111 &
 //   node scripts/check.mjs http://localhost:3111
 import { readFileSync } from 'node:fs';
@@ -30,7 +30,7 @@ let checked = 0;
 for (const [slug, file] of boards) {
   for (const theme of themes) {
     for (const lang of langs) {
-      const expected = readFileSync(new URL(`../../pages/${file}__${theme}__${lang}.html`, import.meta.url), 'utf8');
+      const expected = readFileSync(new URL(`../design/pages/${file}__${theme}__${lang}.html`, import.meta.url), 'utf8');
       const got = await fetch(`${base}/p/${slug}?theme=${theme}&lang=${lang}`).then((r) => r.text());
       const where = `${slug} ${theme} ${lang}`;
       assert.equal(text(got.split('<body>')[1]), text(expected.split('<body>')[1]), `text differs: ${where}`);
