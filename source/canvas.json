@@ -1,0 +1,140 @@
+{
+ "v": 3,
+ "attachments": {},
+ "boards": {
+  "Components.dc.html": {
+   "h": 1000,
+   "title": "Skeleton and components",
+   "w": 1480,
+   "x": 0,
+   "y": 1860
+  },
+  "CoverA-Lisbon.dc.html": {
+   "h": 840,
+   "title": "Cover A, photo-led · Lisbon",
+   "w": 592,
+   "x": 0,
+   "y": 3580
+  },
+  "CoverA-Tokyo.dc.html": {
+   "h": 840,
+   "title": "Cover A, photo-led · Tokyo issue",
+   "w": 592,
+   "x": 0,
+   "y": 4820
+  },
+  "CoverB-Lisbon.dc.html": {
+   "h": 840,
+   "title": "Cover B, type-led · Lisbon",
+   "w": 592,
+   "x": 672,
+   "y": 3580
+  },
+  "CoverB-Tokyo.dc.html": {
+   "h": 840,
+   "title": "Cover B, type-led · Tokyo issue",
+   "w": 592,
+   "x": 672,
+   "y": 4820
+  },
+  "CoverC-Lisbon.dc.html": {
+   "h": 840,
+   "title": "Cover C, motif-led · Lisbon",
+   "w": 592,
+   "x": 1344,
+   "y": 3580
+  },
+  "CoverC-Tokyo.dc.html": {
+   "h": 840,
+   "title": "Cover C, motif-led · Tokyo issue",
+   "w": 592,
+   "x": 1344,
+   "y": 4820
+  },
+  "DayPage-Alfama.dc.html": {
+   "h": 840,
+   "title": "Day 02, Alfama · Lisbon",
+   "w": 592,
+   "x": 0,
+   "y": 6060
+  },
+  "Main.dc.html": {
+   "h": 1500,
+   "title": "Theme system",
+   "w": 1360,
+   "x": 0,
+   "y": 0
+  },
+  "Places-Inverted.dc.html": {
+   "h": 840,
+   "title": "Places, inverted · Lisbon",
+   "w": 592,
+   "x": 1344,
+   "y": 6060
+  },
+  "Places-Light.dc.html": {
+   "h": 840,
+   "title": "Places, light · Lisbon",
+   "w": 592,
+   "x": 672,
+   "y": 6060
+  }
+ },
+ "createdOnFiles": {
+  "at": "2026-09-21T12:00:00Z",
+  "v": 1
+ },
+ "designSystems": [],
+ "launch": {
+  "view": "canvas"
+ },
+ "notes": {
+  "n1": {
+   "kind": "title1",
+   "maxW": 1360,
+   "text": "Design system: four themes, one skeleton",
+   "w": 240,
+   "x": 0,
+   "y": -280
+  },
+  "n2": {
+   "kind": "title1",
+   "maxW": 1936,
+   "text": "Cover, Lisbon theme",
+   "w": 240,
+   "x": 0,
+   "y": 3300
+  },
+  "n3": {
+   "kind": "title1",
+   "maxW": 1936,
+   "text": "Cover, Tokyo issue",
+   "w": 240,
+   "x": 0,
+   "y": 4540
+  },
+  "n4": {
+   "kind": "title1",
+   "maxW": 1936,
+   "text": "Inner pages",
+   "w": 240,
+   "x": 0,
+   "y": 5780
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "Components.dc.html",
+  "CoverA-Lisbon.dc.html",
+  "CoverB-Lisbon.dc.html",
+  "CoverC-Lisbon.dc.html",
+  "CoverA-Tokyo.dc.html",
+  "CoverB-Tokyo.dc.html",
+  "CoverC-Tokyo.dc.html",
+  "DayPage-Alfama.dc.html",
+  "Places-Light.dc.html",
+  "Places-Inverted.dc.html"
+ ],
+ "pages": [],
+ "title": "Travel Zine Generator"
+}
