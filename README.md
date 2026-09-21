@@ -17,6 +17,7 @@ pnpm build && pnpm start
 | `/` | Gallery: board list, theme / language / zoom controls |
 | `/p/<slug>?theme=&lang=` | One board on its own, print-ready |
 | `/booklet?theme=&lang=` | Lisbon sample in reading order, one A5 page per sheet |
+| `/print-guide?theme=&lang=` | One page: printer settings, fold and staple |
 
 Slugs: `cover-a-lisbon`, `cover-b-lisbon`, `cover-c-lisbon`, `cover-a-tokyo`,
 `cover-b-tokyo`, `cover-c-tokyo`, `day-alfama`, `places-light`, `places-inverted`.
@@ -36,19 +37,41 @@ either language — pages are derived from data, never edited directly (spec §2
 - `public/assets`, `public/fonts` — photos and Oswald / PT Serif (SIL OFL), bundled so it works offline.
 
 Pages are drawn at 4 px per mm (592 × 840 px). Printing applies `@page 148mm 210mm`
-and `zoom: .9449`, so an A5 page comes out at true size: choose 100% scale and turn
-off headers and footers in the print dialog. Browser "Save as PDF" is the export for
-now; the Playwright + pdf-lib worker that imposes A4 duplex sheets is not built yet.
+and `zoom: .9449`, so an A5 page comes out at true size.
 
-## Check
+## PDF export
 
-`scripts/check.mjs` renders all 9 boards × 4 themes × 2 languages and asserts the text
-and the set of colours match the original design export exactly:
+Headless Chromium prints the same routes the browser shows, so the preview is the
+print output, and pdf-lib imposes the A5 pages onto sheets in saddle-stitch order:
+fold the stack in half, staple on the fold, and the pages read 1, 2, 3, 4.
 
 ```
 pnpm build && pnpm start -p 3111 &
-pnpm check
+pnpm pdf                     # --theme krakow --lang uk --base http://host
+pnpm pdf:check
 ```
+
+Writes to `out/` (gitignored):
+
+| File | What |
+| --- | --- |
+| `<theme>-<lang>-reading.pdf` | A5 pages in order, for screen and phone |
+| `<theme>-<lang>-print-A4.pdf` | Imposed A4 sheets, duplex, flip on short edge |
+| `<theme>-<lang>-print-Letter.pdf` | The same, scaled to half-Letter |
+| `<theme>-<lang>-print-guide.pdf` | One page: printer settings, fold and staple |
+
+`pnpm pdf:check` asserts what a reprint cannot fix: page count a multiple of 4, exact
+A5 and A4 page boxes, one sheet per two booklet pages, fonts embedded, under 20 MB.
+
+## Checks
+
+```
+pnpm check       # 9 boards x 4 themes x 2 languages match the design export
+pnpm pdf:check   # the generated PDFs are printable and fold correctly
+```
+
+`scripts/check.mjs` renders every board variant and asserts the text and the set of
+colours match `design/pages/*.html` exactly. Both checks need a running server.
 
 ## design/
 
