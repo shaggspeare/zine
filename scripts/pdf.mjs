@@ -21,6 +21,8 @@ const A5 = { w: 148 * MM, h: 210 * MM };
 const A4_LANDSCAPE = { w: 297 * MM, h: 210 * MM };
 const LETTER_LANDSCAPE = { w: 11 * 72, h: 8.5 * 72 };
 const FOLD_MARK = 3 * MM;
+// Home ink is the reader's cost, so warn past 60% coverage (spec section 6.4).
+const INK_BUDGET = 0.6;
 
 /** Print one app route to PDF, at the page size its own CSS asks for. */
 async function renderRoute(page, path) {
@@ -32,6 +34,35 @@ async function renderRoute(page, path) {
     ]),
   );
   return page.pdf({ preferCSSPageSize: true, printBackground: true });
+}
+
+/**
+ * Ink coverage per page, measured on the rendered page rather than estimated from
+ * the theme: a page that is 60% solid colour costs real money on a home printer
+ * (spec section 6.4). Chromium does the pixel work, so this needs no image library.
+ */
+async function inkCoverage(page) {
+  const shots = await page.locator('.zine-page').all();
+  const coverage = [];
+  for (const el of shots) {
+    // Screenshot the page as it really renders, photos and all, then let the
+    // browser decode it: no image library needed on this side.
+    const png = (await el.screenshot()).toString('base64');
+    coverage.push(await page.evaluate(async (b64) => {
+      const bitmap = await createImageBitmap(await (await fetch(`data:image/png;base64,${b64}`)).blob());
+      const canvas = new OffscreenCanvas(120, Math.round((120 * bitmap.height) / bitmap.width));
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      let ink = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        // How far each pixel sits from blank paper, averaged over the page.
+        ink += 1 - (data[i] + data[i + 1] + data[i + 2]) / 765;
+      }
+      return ink / (data.length / 4);
+    }, png));
+  }
+  return coverage;
 }
 
 /**
@@ -99,6 +130,14 @@ const write = async (suffix, bytes) => {
 console.log(`rendering ${base}/booklet${q}`);
 const reading = await renderRoute(page, `/booklet${q}`);
 await write('reading', reading);
+
+// Ink budget: a warning, not a gate. It costs the reader money, not legibility.
+const coverage = await inkCoverage(page);
+coverage.forEach((c, i) => {
+  if (c > INK_BUDGET) console.warn(`! page ${i + 1} is ${(c * 100).toFixed(0)}% ink, over the ${INK_BUDGET * 100}% budget`);
+});
+console.log(`  ink: ${coverage.map((c) => `${(c * 100).toFixed(0)}%`).join(' ')}`);
+
 await write('print-A4', await impose(reading, A4_LANDSCAPE, 'A4'));
 await write('print-Letter', await impose(reading, LETTER_LANDSCAPE, 'Letter'));
 await write('print-guide', await renderRoute(page, `/print-guide${q}`));

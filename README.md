@@ -84,12 +84,34 @@ A5 and A4 page boxes, one sheet per two booklet pages, fonts embedded, under 20 
 ## Checks
 
 ```
+pnpm theme:check    # every theme prints legibly, in colour and in black and white
 pnpm layout:check   # 640 layouts fold in fours, stay in budget, credit every photo
 pnpm check          # 9 boards x 4 themes x 2 languages match the design export
 pnpm pdf:check      # the generated PDFs are printable and fold correctly
 ```
 
-`pnpm layout:check` is pure and needs nothing running.
+`theme:check` and `layout:check` are pure and need nothing running.
+
+## Theme gates
+
+`lib/theme-gates.ts` holds the rules a theme has to pass before it can ship (spec
+§6.4), because a theme that fails them looks fine on screen and then falls apart on
+paper:
+
+- **Contrast** — WCAG AA 4.5:1 for body text on the paper and on the dark page, 3:1
+  for display type, 4.5:1 for tag text on its own field.
+- **Grayscale** — primary, accent and paper must sit at least 20 L\* apart, so the
+  booklet still reads when someone prints it in black and white.
+- **Font coverage** — the bundled fonts must cover і ї є ґ and the apostrophe U+2019,
+  or half the Ukrainian booklet renders as tofu.
+- **Ink budget** — `pnpm pdf` measures real coverage per rendered page and warns past
+  60%; it is the reader's money, not their legibility, so it warns rather than fails.
+
+All four themes pass. The gates are self-tested against a deliberately unprintable
+theme, so "everything passes" means the gates can still fail.
+
+Known: the inverted places page runs about 72% ink, over the budget. It is not in the
+sample booklet, but a layout that uses it should expect the warning.
 
 `scripts/check.mjs` renders every board variant and asserts the text and the set of
 colours match `design/pages/*.html` exactly. Both checks need a running server.
