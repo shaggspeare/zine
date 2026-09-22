@@ -1,11 +1,14 @@
 # Travel Zine
 
 A printable A5 city-trip booklet (148 × 210 mm) rendered in the browser: four themes,
-English and Ukrainian, Lisbon and Tokyo sample issues. Next.js App Router, no database
-and no AI yet — the renderer first, per phase 1 of the implementation spec.
+English and Ukrainian, Lisbon and Tokyo sample issues. Next.js App Router, Postgres
+via Supabase for the waitlist. No AI yet — the renderer and the landing page first,
+per phases 1 and 2 of the implementation spec.
 
 ```
 pnpm install
+supabase start    # local Postgres for the waitlist; needs Docker
+cp .env.example .env.local   # fill from `supabase status`
 pnpm dev          # http://localhost:3000
 pnpm build && pnpm start
 ```
@@ -14,7 +17,8 @@ pnpm build && pnpm start
 
 | Route | What |
 | --- | --- |
-| `/` | Gallery: board list, theme / language / zoom controls |
+| `/` → `/en`, `/uk` | Landing page and waitlist |
+| `/gallery` | Board gallery: theme / language / zoom controls |
 | `/p/<slug>?theme=&lang=` | One board on its own, print-ready |
 | `/booklet?theme=&lang=` | Lisbon sample in reading order, one A5 page per sheet |
 | `/print-guide?theme=&lang=` | One page: printer settings, fold and staple |
@@ -88,6 +92,7 @@ pnpm theme:check    # every theme prints legibly, in colour and in black and whi
 pnpm layout:check   # 640 layouts fold in fours, stay in budget, credit every photo
 pnpm check          # 9 boards x 4 themes x 2 languages match the design export
 pnpm pdf:check      # the generated PDFs are printable and fold correctly
+pnpm api:check      # the waitlist records, dedupes and rejects properly
 ```
 
 `theme:check` and `layout:check` are pure and need nothing running.
@@ -115,6 +120,25 @@ sample booklet, but a layout that uses it should expect the warning.
 
 `scripts/check.mjs` renders every board variant and asserts the text and the set of
 colours match `design/pages/*.html` exactly. Both checks need a running server.
+
+## Landing page and waitlist
+
+`/` redirects to `/en` or `/uk` by `Accept-Language`; the locale lives in the URL
+(spec §12.1). The page carries the seven sections the spec asks for, including the
+fake-door price, which records the click and then says plainly that nothing is live.
+
+The three samples are rendered by the real renderer, so they cannot drift from the
+product: the covers on the page are the actual components, and `pnpm samples`
+regenerates the downloadable PDFs in `public/samples` through the PDF pipeline.
+
+Sign-ups and events go to Postgres via Supabase (`supabase/migrations`). The launch
+gate is 200 organic sign-ups in four weeks, so `source` and `utm` are stored on the
+row — paid traffic has to be separable later. `waitlist_signup` is recorded by the
+server, never accepted from the browser, so the count cannot be inflated.
+
+Not wired up yet: double opt-in email (the `confirmed_at` column is waiting for it),
+PostHog, and the MapLibre/PMTiles maps, which the sample pages stand in for with the
+placeholder map from the design export.
 
 ## design/
 

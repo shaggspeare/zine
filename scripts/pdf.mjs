@@ -13,7 +13,9 @@ const arg = (name, fallback) => {
 const base = arg('base', 'http://localhost:3111');
 const themeId = arg('theme', 'lisbon');
 const lang = arg('lang', 'en');
-const outDir = new URL('../out/', import.meta.url);
+const issue = arg('issue', 'lisbon');
+const outDir = new URL(`../${arg('dir', 'out')}/`, import.meta.url);
+const name = arg('name', `${themeId}-${lang}`);
 
 // PDF points; A5 is exactly half of A4.
 const MM = 72 / 25.4;
@@ -120,11 +122,10 @@ const browser = await chromium.launch();
 const page = await browser.newPage();
 await mkdir(outDir, { recursive: true });
 
-const q = `?theme=${themeId}&lang=${lang}`;
-const name = `${themeId}-${lang}`;
+const q = `?theme=${themeId}&lang=${lang}&issue=${issue}`;
 const write = async (suffix, bytes) => {
   await writeFile(new URL(`${name}-${suffix}.pdf`, outDir), bytes);
-  console.log(`  out/${name}-${suffix}.pdf  ${(bytes.length / 1024).toFixed(0)} kB`);
+  console.log(`  ${new URL(`${name}-${suffix}.pdf`, outDir).pathname.split("/").slice(-2).join("/")}  ${(bytes.length / 1024).toFixed(0)} kB`);
 };
 
 console.log(`rendering ${base}/booklet${q}`);

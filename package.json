@@ -10,13 +10,19 @@
     "pdf": "node scripts/pdf.mjs",
     "pdf:check": "node scripts/pdf-check.mjs",
     "layout:check": "tsx scripts/layout-check.ts",
-    "theme:check": "tsx scripts/theme-check.ts"
+    "theme:check": "tsx scripts/theme-check.ts",
+    "samples": "tsx scripts/samples.ts",
+    "db:start": "supabase start",
+    "db:reset": "supabase db reset",
+    "api:check": "node scripts/api-check.mjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.116.0",
     "next": "16.3.5",
     "pdf-lib": "^1.17.1",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@types/node": "^20",
